@@ -1,17 +1,20 @@
-'use client';
+"use client";
 
-import { Dialog, Transition } from '@headlessui/react';
-import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
-import { Fragment, Suspense, useEffect, useState } from 'react';
+import {Dialog, Transition} from "@headlessui/react";
+import Link from "next/link";
+import {usePathname, useSearchParams} from "next/navigation";
+import {Fragment, Suspense, useEffect, useState} from "react";
 
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-import { Menu } from 'lib/shopify/types';
-import Search, { SearchSkeleton } from './search';
+import {Bars3Icon, XMarkIcon} from "@heroicons/react/24/outline";
+import {Menu} from "lib/shopify/types";
+import Search, {SearchSkeleton} from "./search";
 
-export default function MobileMenu({ menu }: { menu: Menu[] }) {
+function SearchParamsWrapper({children}: {children: React.ReactNode}) {
+  return <Suspense fallback={null}>{children}</Suspense>;
+}
+
+export default function MobileMenu({menu}: {menu: Menu[]}) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
   const openMobileMenu = () => setIsOpen(true);
   const closeMobileMenu = () => setIsOpen(false);
@@ -22,9 +25,40 @@ export default function MobileMenu({ menu }: { menu: Menu[] }) {
         setIsOpen(false);
       }
     };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [isOpen]);
+
+  return (
+    <SearchParamsWrapper>
+      <MobileMenuContent
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        closeMobileMenu={closeMobileMenu}
+        openMobileMenu={openMobileMenu}
+        pathname={pathname}
+        menu={menu}
+      />
+    </SearchParamsWrapper>
+  );
+}
+
+function MobileMenuContent({
+  isOpen,
+  closeMobileMenu,
+  openMobileMenu,
+  setIsOpen,
+  pathname,
+  menu,
+}: {
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+  closeMobileMenu: () => void;
+  openMobileMenu: () => void;
+  pathname: string;
+  menu: Menu[];
+}) {
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     setIsOpen(false);
@@ -83,7 +117,11 @@ export default function MobileMenu({ menu }: { menu: Menu[] }) {
                         className="py-2 text-xl text-black transition-colors hover:text-neutral-500 dark:text-white"
                         key={item.title}
                       >
-                        <Link href={item.path} prefetch={true} onClick={closeMobileMenu}>
+                        <Link
+                          href={item.path}
+                          prefetch={true}
+                          onClick={closeMobileMenu}
+                        >
                           {item.title}
                         </Link>
                       </li>
